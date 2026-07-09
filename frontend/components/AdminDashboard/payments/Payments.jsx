@@ -9,6 +9,8 @@ import { usePathname } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+import AssignChargesModal from "./AssignChargesModal"; // Import the AssignChargesModal component
+
 const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function Payments() {
@@ -26,6 +28,9 @@ export default function Payments() {
   });
 
   const [showChargeTypeModal, setShowChargeTypeModal] = useState(false);
+
+  const [showAssignCharges, setShowAssignCharges] = useState(false); // State to control the visibility of the AssignChargesModal
+
   const [chargeTypeName, setChargeTypeName] = useState("");
 
   const { students, total, loading, setRefresh } = useStudentsDues({
@@ -76,9 +81,9 @@ export default function Payments() {
         student={selectedStudent}
         onBack={() => setSelectedStudent(null)}
         onPaymentSuccess={() => {
-        fetchSummary();
-        setRefresh(prev => !prev);
-      }}
+          fetchSummary();
+          setRefresh(prev => !prev);
+        }}
       />
     );
   }
@@ -95,7 +100,7 @@ export default function Payments() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#020617] via-[#0f172a] to-[#1e1b4b] text-white p-4 sm:p-6 space-y-6">
 
-      <div className="flex justify-between items-center">
+      {/* <div className="flex justify-between items-center">
         <h2 className="text-lg sm:text-2xl font-bold flex items-center gap-2">
           <CreditCard className="text-indigo-400" /> Payment Dashboard
         </h2>
@@ -107,6 +112,30 @@ export default function Payments() {
         >
           + Add Charge Type
         </Button>
+      </div> */}
+      {/* ✅ DASHBOARD CARDS  new assign charges button added*/}
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg sm:text-2xl font-bold flex items-center gap-2">
+          <CreditCard className="text-indigo-400" /> Payment Dashboard
+        </h2>
+
+        <div className="flex gap-3">
+          <Button
+            size="sm"
+            className="px-3 py-1 text-xs sm:text-sm md:text-base md:px-4 md:py-2"
+            onClick={() => setShowAssignCharges(true)}
+          >
+            Assign Charges
+          </Button>
+
+          <Button
+            size="sm"
+            className="px-3 py-1 text-xs sm:text-sm md:text-base md:px-4 md:py-2"
+            onClick={() => setShowChargeTypeModal(true)}
+          >
+            + Add Charge Type
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -183,25 +212,25 @@ export default function Payments() {
 
       {/* ✅ PAGINATION FOOTER */}
       <div className="px-6 py-4 border-t border-white/10 flex justify-between text-sm text-gray-400">
-          <p>{students.length} / {total}</p>
+        <p>{students.length} / {total}</p>
 
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPage((p) => Math.max(p - 1, 1))}
-              className="px-4 py-2 bg-white/5 rounded-lg"
-            >
-              Prev
-            </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            className="px-4 py-2 bg-white/5 rounded-lg"
+          >
+            Prev
+          </button>
 
-            <button
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page * limit >= total}
-              className="px-4 py-2 bg-white/5 rounded-lg disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page * limit >= total}
+            className="px-4 py-2 bg-white/5 rounded-lg disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
+      </div>
 
       {showChargeTypeModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
@@ -230,6 +259,11 @@ export default function Payments() {
           </div>
         </div>
       )}
+
+      <AssignChargesModal // Render the AssignChargesModal component
+        open={showAssignCharges}
+        onClose={() => setShowAssignCharges(false)}
+      />
 
     </div>
   );

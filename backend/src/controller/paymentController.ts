@@ -54,7 +54,23 @@ export const createCharge = async (req: any, res: Response) => {
   }
 };
 
+export const getChargeTypes = async (req: any, res: Response) => {
+  try {
+    const chargeTypes = await prisma.chargeType.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    });
 
+    return res.json(chargeTypes);
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      msg: "Internal server error",
+    });
+  }
+};
 
 export const generateInvoices = async (req: any, res: Response) => {
   try {
@@ -169,8 +185,8 @@ export const payInvoice = async (req: any, res: Response) => {
       newRemaining === 0
         ? "PAID"
         : newPaid > 0
-        ? "PARTIAL"
-        : "PENDING";
+          ? "PARTIAL"
+          : "PENDING";
 
     await prisma.invoice.update({
       where: { id: invoiceId },
@@ -360,7 +376,7 @@ export const getStudentTransactions = async (req: any, res: Response) => {
       amount: t.amount,
       paidAt: t.paidAt,
       type: t.invoice.charge.chargeType.name,
-      status: t.invoice.status, 
+      status: t.invoice.status,
     }));
 
     return res.json(formatted);

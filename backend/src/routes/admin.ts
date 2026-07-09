@@ -1,14 +1,16 @@
-import express, {Request, Response} from "express";
+import express, { Request, Response } from "express";
 import { verifyToken } from "../middlewares/authMiddleware";
 import { authorizeRole } from "../middlewares/roleMiddleware";
-import { createStudent, createWarden, deleteStudent, deleteWarden, getAdmins, getInactiveStudents, getInactiveWardens, getSingleStudent, getSingleWarden, getStudents, getUnassignedStudents, getwardens, updateStudent, updateUser} from "../controller/adminController";
+import { createStudent, createWarden, deleteStudent, deleteWarden, getAdmins, getInactiveStudents, getInactiveWardens, getSingleStudent, getSingleWarden, getStudents, getUnassignedStudents, getwardens, updateStudent, updateUser } from "../controller/adminController";
 import { getSelfDetails, updateSelfProfile } from "../controller/userController";
 import { allocateRoom, createRooms, deleteRoom, getAllRooms, getRooms, getSingleRoom, updateRoom } from "../controller/roomController";
-import { createCharge, createChargeType, generateInvoiceForStudent, getAllStudentsWithDues, getDashboardSummary, getStudentPayments, getStudentTransactions, payInvoice } from "../controller/paymentController";
+import { createCharge, createChargeType, generateInvoiceForStudent, getAllStudentsWithDues, getDashboardSummary, getStudentPayments, getStudentTransactions, payInvoice, getChargeTypes } from "../controller/paymentController";  // Import getChargeTypes function
 import { getAllStudents, inactiveStudent, removeStudent } from "../controller/admin/studentController";
 import { inactiveWarden } from "../controller/admin/wardenController";
 import { getAllComplaints, getComplaintById, updateComplaintPriority, updateComplaintStatus } from "../controller/admin/complaintController";
 import { createNotice, deleteNotice, getAllNotices, getSingleNotice, updateNotice } from "../controller/noticeController";
+
+import { applyChargeToStudents } from "../controller/payment/applyChargeController";   // Import the applyChargeToStudents function
 
 const adminRouter = express.Router();
 
@@ -74,6 +76,9 @@ adminRouter.get("/summary", getDashboardSummary);
 adminRouter.get("/students-dues", getAllStudentsWithDues);
 adminRouter.post("/charge-type", createChargeType);
 adminRouter.get("/student-transactions/:studentId", getStudentTransactions);
+
+adminRouter.post("/assign-charges", applyChargeToStudents); // New route for applying charges to students
+adminRouter.get("/charge-types", getChargeTypes); // New route to get all charge types
 
 
 adminRouter.get("/complaints", getAllComplaints);

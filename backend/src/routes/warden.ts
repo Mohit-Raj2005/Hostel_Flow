@@ -1,13 +1,15 @@
-import express, {Request, Response} from "express"
+import express, { Request, Response } from "express"
 import { createStudent, deleteStudent, getInactiveStudents, getSingleStudent, getStudents, getUnassignedStudents, updateStudent } from "../controller/adminController";
 import { verifyToken } from "../middlewares/authMiddleware";
 import { authorizeRole } from "../middlewares/roleMiddleware";
 import { getSelfDetails, updateSelfProfile } from "../controller/userController";
 import { allocateRoom, createRooms, deleteRoom, getAllRooms, getRooms, getSingleRoom, updateRoom } from "../controller/roomController";
 import { getAllStudents, inactiveStudent, removeStudent } from "../controller/admin/studentController";
-import { createCharge, createChargeType, generateInvoiceForStudent, getAllStudentsWithDues, getDashboardSummary, getStudentPayments, getStudentTransactions, payInvoice } from "../controller/paymentController";
+import { createCharge, createChargeType, generateInvoiceForStudent, getAllStudentsWithDues, getDashboardSummary, getStudentPayments, getStudentTransactions, payInvoice, getChargeTypes } from "../controller/paymentController";   // Import getChargeTypes function
 import { getAllComplaints, getComplaintById, updateComplaintPriority, updateComplaintStatus } from "../controller/admin/complaintController";
 import { createNotice, deleteNotice, getAllNotices, getSingleNotice, updateNotice } from "../controller/noticeController";
+
+import { applyChargeToStudents } from "../controller/payment/applyChargeController"; // Import the applyChargeToStudents function
 
 const wardenRouter = express.Router();
 
@@ -63,7 +65,8 @@ wardenRouter.get("/students-dues", getAllStudentsWithDues);
 wardenRouter.post("/charge-type", createChargeType);
 wardenRouter.get("/student-transactions/:studentId", getStudentTransactions);
 
-
+wardenRouter.get("/charge-types", getChargeTypes); // New route to get all charge types
+wardenRouter.post("/assign-charges", applyChargeToStudents); // New route for applying charges to students
 
 wardenRouter.get("/complaints", getAllComplaints);
 wardenRouter.get("/complaints/:id", getComplaintById);
