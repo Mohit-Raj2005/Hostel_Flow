@@ -29,7 +29,7 @@ export default function Payments() {
 
   const [showChargeTypeModal, setShowChargeTypeModal] = useState(false);
 
-  const [showAssignCharges, setShowAssignCharges] = useState(false); // State to control the visibility of the AssignChargesModal
+  const [showAssignCharges, setShowAssignCharges] = useState(false);
 
   const [chargeTypeName, setChargeTypeName] = useState("");
 
@@ -64,7 +64,7 @@ export default function Payments() {
       await axios.post(
         `${url}/api/v1/${role}/charge-type`,
         { name: chargeTypeName },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       toast.success("Charge type created");
@@ -75,6 +75,11 @@ export default function Payments() {
     }
   };
 
+  const handleAssignSuccess = () => {
+    fetchSummary();
+    setRefresh((prev) => !prev);
+  };
+
   if (selectedStudent) {
     return (
       <StudentPayments
@@ -82,7 +87,7 @@ export default function Payments() {
         onBack={() => setSelectedStudent(null)}
         onPaymentSuccess={() => {
           fetchSummary();
-          setRefresh(prev => !prev);
+          setRefresh((prev) => !prev);
         }}
       />
     );
@@ -99,7 +104,6 @@ export default function Payments() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#020617] via-[#0f172a] to-[#1e1b4b] text-white p-4 sm:p-6 space-y-6">
-
       {/* <div className="flex justify-between items-center">
         <h2 className="text-lg sm:text-2xl font-bold flex items-center gap-2">
           <CreditCard className="text-indigo-400" /> Payment Dashboard
@@ -140,17 +144,37 @@ export default function Payments() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {[
-          { label: "Collected", value: totalCollected, color: "emerald", icon: <ArrowUpRight /> },
-          { label: "Pending", value: totalPending, color: "amber", icon: <CreditCard /> },
-          { label: "Students", value: total, color: "rose", icon: <ArrowDownLeft /> },
+          {
+            label: "Collected",
+            value: totalCollected,
+            color: "emerald",
+            icon: <ArrowUpRight />,
+          },
+          {
+            label: "Pending",
+            value: totalPending,
+            color: "amber",
+            icon: <CreditCard />,
+          },
+          {
+            label: "Students",
+            value: total,
+            color: "rose",
+            icon: <ArrowDownLeft />,
+          },
         ].map((item, i) => (
-          <Card key={i} className="flex items-center gap-3 sm:gap-4 bg-white/5 backdrop-blur-md border border-white/10">
+          <Card
+            key={i}
+            className="flex items-center gap-3 sm:gap-4 bg-white/5 backdrop-blur-md border border-white/10"
+          >
             <div className={`p-2 sm:p-3 rounded-xl ${colorMap[item.color]}`}>
               {item.icon}
             </div>
             <div>
               <p className="text-xs text-gray-400">{item.label}</p>
-              <h4 className={`text-lg sm:text-2xl font-bold ${colorMap[item.color].split(" ")[1]}`}>
+              <h4
+                className={`text-lg sm:text-2xl font-bold ${colorMap[item.color].split(" ")[1]}`}
+              >
                 {item.value}
               </h4>
             </div>
@@ -177,7 +201,10 @@ export default function Payments() {
                   <td className="px-6 py-3 text-gray-400">{student.room}</td>
                   <td className="px-6 py-3 font-bold">₹{student.due}</td>
                   <td className="px-6 py-3">
-                    <Button size="sm" onClick={() => setSelectedStudent(student)}>
+                    <Button
+                      size="sm"
+                      onClick={() => setSelectedStudent(student)}
+                    >
                       View
                     </Button>
                   </td>
@@ -189,7 +216,10 @@ export default function Payments() {
 
         <div className="sm:hidden p-4 space-y-3">
           {students.map((student) => (
-            <Card key={student.studentId} className="p-4 bg-white/5 border border-white/10">
+            <Card
+              key={student.studentId}
+              className="p-4 bg-white/5 border border-white/10"
+            >
               <div className="flex justify-between items-center">
                 <div>
                   <p className="font-semibold">{student.name}</p>
@@ -212,7 +242,9 @@ export default function Payments() {
 
       {/* ✅ PAGINATION FOOTER */}
       <div className="px-6 py-4 border-t border-white/10 flex justify-between text-sm text-gray-400">
-        <p>{students.length} / {total}</p>
+        <p>
+          {students.length} / {total}
+        </p>
 
         <div className="flex gap-2">
           <button
@@ -260,11 +292,11 @@ export default function Payments() {
         </div>
       )}
 
-      <AssignChargesModal // Render the AssignChargesModal component
+      <AssignChargesModal
         open={showAssignCharges}
         onClose={() => setShowAssignCharges(false)}
+        onSuccess={handleAssignSuccess}
       />
-
     </div>
   );
 }
