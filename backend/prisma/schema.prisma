@@ -212,6 +212,7 @@ enum ChargeFrequency {
   ONE_TIME
   MONTHLY
   QUARTERLY
+  HALF_YEARLY
   YEARLY
   CUSTOM
 }

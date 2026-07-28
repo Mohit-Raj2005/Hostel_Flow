@@ -67,9 +67,11 @@ export default function AssignChargesModal({ open, onClose, onSuccess }) {
   };
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
+      ...(name === "frequency" && value != "CUSTOM" ? { interval: 1 } : {}),
     }));
   };
 
@@ -107,13 +109,28 @@ export default function AssignChargesModal({ open, onClose, onSuccess }) {
         return toast.error("Please select at least one student.");
       }
 
+      if (formData.frequency === "CUSTOM" && Number(formData.interval) < 1) {
+        return toast.error("Interval must be at least 1.");
+      }
       setSubmitting(true);
 
+      const defaultIntervals = {
+        ONE_TIME: 1,
+        MONTHLY: 12,
+        QUARTERLY: 4,
+        HALF_YEARLY:2,
+        YEARLY: 1,
+      };
+
+      const interval =
+        formData.frequency === "CUSTOM"
+          ? Number(formData.interval)
+          : defaultIntervals[formData.frequency];
       const payload = {
         chargeType: formData.chargeType,
         baseAmount: Number(formData.baseAmount),
         frequency: formData.frequency,
-        interval: Number(formData.interval),
+        interval,
         dueDate: formData.dueDate,
         assignmentType: formData.assignmentType,
         studentIds:
@@ -239,6 +256,9 @@ export default function AssignChargesModal({ open, onClose, onSuccess }) {
                   <option value="QUARTERLY" className="bg-[#1e293b] text-white">
                     Quarterly
                   </option>
+                  <option value="HALF_YEARLY" className="bg-[#1e293b] text-white">
+                    Half Yearly
+                  </option>
                   <option value="YEARLY" className="bg-[#1e293b] text-white">
                     Yearly
                   </option>
@@ -248,21 +268,22 @@ export default function AssignChargesModal({ open, onClose, onSuccess }) {
                 </select>
               </div>
 
-              {/* Interval */}
-              <div>
-                <label className="block text-sm text-gray-300 mb-2">
-                  Interval
-                </label>
+              {formData.frequency === "CUSTOM" && (
+                <div>
+                  <label className="block text-sm text-gray-300 mb-2">
+                    Interval
+                  </label>
 
-                <input
-                  type="number"
-                  name="interval"
-                  min="1"
-                  value={formData.interval}
-                  onChange={handleChange}
-                  className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white outline-none"
-                />
-              </div>
+                  <input
+                    type="number"
+                    name="interval"
+                    min="1"
+                    value={formData.interval}
+                    onChange={handleChange}
+                    className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white outline-none"
+                  />
+                </div>
+              )}
 
               {/* Due Date */}
               <div>

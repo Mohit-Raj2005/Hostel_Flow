@@ -17,7 +17,7 @@ export default function RecentTransactions({ studentId, refresh }) {
     try {
       const res = await axios.get(
         `${url}/api/v1/${role}/student-transactions/${studentId}`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       setTransactions(res.data || []);
     } catch (e) {
@@ -32,9 +32,16 @@ export default function RecentTransactions({ studentId, refresh }) {
   }, [role, refresh]);
 
   const getStatus = (status) => {
-    return status === "PAID" || status === "PARTIAL"
-      ? "Success"
-      : "Failed";
+    return status === "PAID" || status === "PARTIAL" ? "Success" : "Failed";
+  };
+
+  const formatMethod = (method) => {
+    if (!method) return "Cash";
+
+    return method
+      .replaceAll("_", " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
   return (
@@ -47,8 +54,10 @@ export default function RecentTransactions({ studentId, refresh }) {
             <tr>
               <th className="px-6 py-3">Type</th>
               <th className="px-6 py-3">Amount</th>
+              <th className="px-6 py-3">Method</th>
+              <th className="px-6 py-3">Reference</th>
               <th className="px-6 py-3">Status</th>
-              <th className="px-6 py-3">Date</th>
+              <th className="px-6 py-3">Collected On</th>
             </tr>
           </thead>
 
@@ -57,6 +66,10 @@ export default function RecentTransactions({ studentId, refresh }) {
               <tr key={t.id}>
                 <td className="px-6 py-3">{t.type}</td>
                 <td className="px-6 py-3 font-bold">₹{t.amount}</td>
+                <td className="px-6 py-3">{formatMethod(t.method || "Cash")}</td>
+                <td className="px-6 py-3 text-gray-400">
+                  {t.reference || "-"}
+                </td>
                 <td className="px-6 py-3">
                   <Badge
                     className="w-[90px] justify-center"
@@ -70,7 +83,7 @@ export default function RecentTransactions({ studentId, refresh }) {
                   </Badge>
                 </td>
                 <td className="px-6 py-3 text-gray-400">
-                  {new Date(t.paidAt).toLocaleDateString()}
+                  {new Date(t.paidAt).toLocaleString()}
                 </td>
               </tr>
             ))}
@@ -84,6 +97,12 @@ export default function RecentTransactions({ studentId, refresh }) {
             <div className="flex justify-between items-center">
               <p className="font-semibold">{t.type}</p>
               <p className="font-bold">₹{t.amount}</p>
+              <p className="text-sm text-gray-300">
+                Method: {t.method || "Cash"}
+              </p>
+              {t.reference && (
+                <p className="text-sm text-gray-400">Ref: {t.reference}</p>
+              )}
             </div>
 
             <div className="flex justify-between items-center mt-1">
@@ -98,7 +117,7 @@ export default function RecentTransactions({ studentId, refresh }) {
                 {getStatus(t.status)}
               </Badge>
               <p className="text-xs text-gray-400">
-                {new Date(t.paidAt).toLocaleDateString()}
+                {new Date(t.paidAt).toLocaleString()}
               </p>
             </div>
           </Card>

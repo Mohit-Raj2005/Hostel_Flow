@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { ref } from "node:process";
 
 const prisma = new PrismaClient();
 
@@ -8,7 +9,8 @@ export const createCharge = async (req: any, res: Response) => {
   try {
     const hostelId = req.user.hostelId;
 
-    const { chargeTypeId, baseAmount, frequency, interval, studentId } = req.body;
+    const { chargeTypeId, baseAmount, frequency, interval, studentId } =
+      req.body;
 
     const chargeType = await prisma.chargeType.findFirst({
       where: {
@@ -47,7 +49,6 @@ export const createCharge = async (req: any, res: Response) => {
     }
 
     return res.status(201).json(charge);
-
   } catch (e) {
     console.log(e);
     return res.status(500).json({ msg: "Internal server error" });
@@ -159,10 +160,9 @@ export const generateInvoiceForStudent = async (req: any, res: Response) => {
   }
 };
 
-
 export const payInvoice = async (req: any, res: Response) => {
   try {
-    const { invoiceId, amount } = req.body;
+    const { invoiceId, amount, method, reference } = req.body;
     const invoice = await prisma.invoice.findUnique({
       where: { id: invoiceId },
     });
@@ -182,13 +182,15 @@ export const payInvoice = async (req: any, res: Response) => {
     const newRemaining = invoice.totalAmount - newPaid;
 
     const status =
-      newRemaining === 0
-        ? "PAID"
-        : newPaid > 0
-          ? "PARTIAL"
-          : "PENDING";
+      newRemaining === 0 ? "PAID" : newPaid > 0 ? "PARTIAL" : "PENDING";
 
-    await prisma.invoice.update({
+    if (method && method !== "CASH" && !reference?.trim()) {
+      return res.status(400).json({
+        msg: "Reference is required",
+      });
+    }
+    await prisma.$transaction(async (tx)=>{
+          await tx.invoice.update({
       where: { id: invoiceId },
       data: {
         paidAmount: newPaid,
@@ -196,19 +198,25 @@ export const payInvoice = async (req: any, res: Response) => {
         status,
       },
     });
-    await prisma.paymentTransaction.create({
+    await tx.paymentTransaction.create({
       data: {
         studentId: invoice.studentId,
         invoiceId,
         amount,
+        method,
+        reference: reference?.trim() || null,
       },
     });
+    });
     return res.json({ msg: "Payment successful" });
-  } catch (e) {
-    console.log(e);
-    return res.status(500).json({ msg: "Internal server error" });
-  }
-};
+
+  }catch(e){
+      console.log(e);
+      return res.status(500).json({
+        msg:"Internal server Error"
+      });
+    }
+  };
 
 export const getStudentPayments = async (req: Request, res: Response) => {
   try {
@@ -237,13 +245,11 @@ export const getStudentPayments = async (req: Request, res: Response) => {
     }));
 
     return res.json(formatted);
-
   } catch (e) {
     console.log(e);
     return res.status(500).json({ msg: "Internal server error" });
   }
 };
-
 
 export const getDashboardSummary = async (req: any, res: Response) => {
   try {
@@ -312,13 +318,10 @@ export const getAllStudentsWithDues = async (req: any, res: Response) => {
         totalPages: Math.ceil(totalCount / limit),
       },
     });
-
   } catch {
     return res.status(500).json({ msg: "Internal server error" });
   }
 };
-
-
 
 export const createChargeType = async (req: any, res: Response) => {
   try {
@@ -348,8 +351,6 @@ export const createChargeType = async (req: any, res: Response) => {
   }
 };
 
-
-
 export const getStudentTransactions = async (req: any, res: Response) => {
   try {
     const { studentId } = req.params;
@@ -377,6 +378,8 @@ export const getStudentTransactions = async (req: any, res: Response) => {
       paidAt: t.paidAt,
       type: t.invoice.charge.chargeType.name,
       status: t.invoice.status,
+      method: t.method,
+      reference: t.reference,
     }));
 
     return res.json(formatted);
@@ -384,4 +387,4 @@ export const getStudentTransactions = async (req: any, res: Response) => {
     console.log(e);
     return res.status(500).json({ msg: "Internal server error" });
   }
-};
+}
