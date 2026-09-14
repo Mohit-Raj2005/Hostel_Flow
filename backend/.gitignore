@@ -6,4 +6,4 @@ node_modules
 
 prisma/seed.ts
 prisma/seed.js
-
+dist/
